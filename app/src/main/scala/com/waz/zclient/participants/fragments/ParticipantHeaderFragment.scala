@@ -24,8 +24,6 @@ import android.support.v7.widget.Toolbar
 import android.view._
 import android.view.animation.{AlphaAnimation, Animation}
 import android.widget.TextView
-import com.waz.api.Verification
-import com.waz.model.UserData
 import com.waz.utils.events.{Signal, Subscription}
 import com.waz.utils.returning
 import com.waz.zclient.common.controllers.ThemeController
@@ -33,11 +31,9 @@ import com.waz.zclient.pages.BaseFragment
 import com.waz.zclient.pages.main.conversation.controller.IConversationScreenController
 import com.waz.zclient.participants.ParticipantsController
 import com.waz.zclient.utils.{RichView, ViewUtils}
-import com.waz.zclient.views.e2ee.ShieldView
 import com.waz.zclient.{FragmentHelper, R}
 
 class ParticipantHeaderFragment extends BaseFragment[ParticipantHeaderFragment.Container] with FragmentHelper {
-
   implicit def cxt: Context = getActivity
 
   private lazy val participantsController = inject[ParticipantsController]
@@ -48,12 +44,15 @@ class ParticipantHeaderFragment extends BaseFragment[ParticipantHeaderFragment.C
 
   private lazy val toolbar = returning(view[Toolbar](R.id.t__participants__toolbar)) { vh =>
     (for {
-      isSingleParticipant <- participantsController.otherParticipant.map(_.isDefined)
-      darkTheme           <- themeController.darkThemeSet
-      icon                =  if (darkTheme) R.drawable.action_back_light else R.drawable.action_back_dark
-    } yield if (isSingleParticipant) Some(icon) else None).onUi {
+      navVisible <- getParentFragment match {
+                      case (f: ParticipantFragment) => f.navigationIconVisible
+                      case _                        => Signal.const(true)
+                    }
+      darkTheme  <- themeController.darkThemeSet
+      icon       =  if (darkTheme) R.drawable.action_back_light else R.drawable.action_back_dark
+    } yield if (navVisible) Some(icon) else None).onUi {
       case Some(iconId) => vh.foreach(_.setNavigationIcon(iconId))
-      case None => vh.foreach(_.setNavigationIcon(null))
+      case None         => vh.foreach(_.setNavigationIcon(null))
     }
   }
 
@@ -66,16 +65,6 @@ class ParticipantHeaderFragment extends BaseFragment[ParticipantHeaderFragment.C
       isSingleParticipant <- participantsController.otherParticipant.map(_.isDefined)
     } yield !isSingleParticipant).onUi(vis => vh.foreach(_.setVisible(vis)))
   }
-
-  private def showOfflineRenameError(): Unit =
-    ViewUtils.showAlertDialog(
-      getActivity,
-      R.string.alert_dialog__no_network__header,
-      R.string.rename_conversation__no_network__message,
-      R.string.alert_dialog__confirmation,
-      null,
-      true
-    )
 
   // This is a workaround for the bug where child fragments disappear when
   // the parent is removed (as all children are first removed from the parent)
@@ -99,8 +88,6 @@ class ParticipantHeaderFragment extends BaseFragment[ParticipantHeaderFragment.C
     headerReadOnlyTextView
     closeIcon
   }
-
-  def onBackPressed(): Boolean = false
 
   override def onPause(): Unit = {
     toolbar.foreach(_.setNavigationOnClickListener(null))

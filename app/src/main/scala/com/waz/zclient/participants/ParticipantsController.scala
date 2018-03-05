@@ -94,6 +94,8 @@ class ParticipantsController(implicit injector: Injector, context: Context, ec: 
 
   def getUser(userId: UserId): Future[Option[UserData]] = zms.head.flatMap(_.users.getUser(userId))
 
+  def userSignal(userId: UserId): Signal[UserData] = zms.flatMap(_.users.userSignal(userId))
+
   def addMembers(userIds: Set[UserId]): Future[Unit] =
     convController.currentConvId.head.flatMap { convId => convController.addMembers(convId, userIds) }
 

@@ -29,7 +29,7 @@ import com.waz.api._
 import com.waz.model._
 import com.waz.model.otr.ClientId
 import com.waz.threading.Threading
-import com.waz.utils.events.Subscription
+import com.waz.utils.events.{Signal, Subscription}
 import com.waz.utils.returning
 import com.waz.zclient.controllers.navigation.{INavigationController, Page}
 import com.waz.zclient.controllers.singleimage.ISingleImageController
@@ -76,6 +76,11 @@ class ParticipantFragment extends BaseFragment[ParticipantFragment.Container] wi
 
   private lazy val headerFragment = ParticipantHeaderFragment.newInstance
 
+  val navigationIconVisible = Signal(true)
+
+  def setNavigationIconVisible(isVisible: Boolean): Unit =
+    navigationIconVisible ! isVisible
+
   override def onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation =
     if (nextAnim == 0 || Option(getContainer).isEmpty || getControllerFactory.isTornDown)
       super.onCreateAnimation(transit, enter, nextAnim)
@@ -101,15 +106,20 @@ class ParticipantFragment extends BaseFragment[ParticipantFragment.Container] wi
       participantsController.isGroupOrBot.head.foreach { groupOrBot =>
         getChildFragmentManager.beginTransaction
         .setCustomAnimations(
-          R.anim.slide_in_from_bottom_pick_user,
+          R.anim.open_new_conversation__thread_list_in,
           R.anim.open_new_conversation__thread_list_out,
           R.anim.open_new_conversation__thread_list_in,
-          R.anim.slide_out_to_bottom_pick_user
+          R.anim.open_new_conversation__thread_list_out
         )
         .replace(
           R.id.fl__participant__header__container,
           headerFragment,
           ParticipantHeaderFragment.TAG
+        )
+        .replace(
+          R.id.fl__participant__settings_box,
+          OptionsMenuFragment.newInstance(false),
+          OptionsMenuFragment.Tag
         )
         .replace(
           R.id.fl__participant__container,
@@ -121,11 +131,6 @@ class ParticipantFragment extends BaseFragment[ParticipantFragment.Container] wi
             GroupParticipantsFragment.Tag
           else
             SingleParticipantFragment.Tag
-        )
-        .replace(
-          R.id.fl__participant__settings_box,
-          OptionsMenuFragment.newInstance(false),
-          OptionsMenuFragment.Tag
         )
         .commit
       }
@@ -166,8 +171,7 @@ class ParticipantFragment extends BaseFragment[ParticipantFragment.Container] wi
     super.onDestroyView()
   }
 
-  override def onBackPressed: Boolean =
-    if (headerFragment.onBackPressed()) true else withBackstackHead {
+  override def onBackPressed: Boolean = withBackstackHead {
     case Some(f: SingleParticipantFragment) if f.onBackPressed() =>
       verbose(s"onBackPressed with SingleParticipantFragment")
       true

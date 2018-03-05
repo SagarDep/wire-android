@@ -65,10 +65,9 @@ class ParticipantOtrDeviceAdapter(implicit context: Context, injector: Injector,
   } yield z.sync.syncClients(userId)
 
   (for {
-    z            <- zms
     cs           <- clients
     Some(userId) <- participantsController.otherParticipant
-    user         <- z.users.userSignal(userId)
+    user         <- participantsController.userSignal(userId)
     color        <- accentColorController.accentColor
   } yield (cs, user.name, color)).onUi { case (cs, name, color) =>
     devices = cs

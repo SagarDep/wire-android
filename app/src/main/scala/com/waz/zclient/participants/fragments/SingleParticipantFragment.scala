@@ -24,11 +24,10 @@ import android.support.v4.app.Fragment
 import android.support.v4.view.ViewPager
 import android.view.animation.{AlphaAnimation, Animation}
 import android.view.{LayoutInflater, View, ViewGroup}
-import android.widget.TextView
+import android.widget.{ImageView, TextView}
 import com.waz.ZLog.ImplicitTag._
 import com.waz.threading.Threading
 import com.waz.utils._
-import com.waz.utils.events.Signal
 import com.waz.zclient.common.controllers.{BrowserController, ThemeController, UserAccountsController}
 import com.waz.zclient.conversation.ConversationController
 import com.waz.zclient.pages.main.conversation.controller.IConversationScreenController
@@ -36,9 +35,9 @@ import com.waz.zclient.participants.fragments.SingleParticipantFragment.{ArgFirs
 import com.waz.zclient.participants.{ParticipantOtrDeviceAdapter, ParticipantsController, TabbedParticipantPagerAdapter}
 import com.waz.zclient.ui.views.tab.TabIndicatorLayout
 import com.waz.zclient.utils.ContextUtils._
+import com.waz.zclient.utils.{RichView, StringUtils, ViewUtils}
 import com.waz.zclient.views.menus.FooterMenuCallback
 import com.waz.zclient.{FragmentHelper, R}
-import com.waz.zclient.utils.{RichView, StringUtils, ViewUtils}
 
 class SingleParticipantFragment extends FragmentHelper {
   import Threading.Implicits.Ui
@@ -57,7 +56,7 @@ class SingleParticipantFragment extends FragmentHelper {
 
   private lazy val otherUser = for {
     Some(userId) <- participantsController.otherParticipant
-    Some(user)   <- Signal.future(participantsController.getUser(userId))
+    user         <- participantsController.userSignal(userId)
   } yield user
 
   private lazy val userNameView = returning(view[TextView](R.id.user_name)) { vh =>
@@ -77,6 +76,10 @@ class SingleParticipantFragment extends FragmentHelper {
       case Some(h) => StringUtils.formatHandle(h)
       case _       => ""
     }.onUi { str => vh.foreach(_.setText(str)) }
+  }
+
+  private lazy val userShield = returning(view[ImageView](R.id.single_user_verified_shield)){ vh =>
+    otherUser.map(_.isVerified).onUi { isVerified => vh.foreach(_.setVisible(isVerified)) }
   }
 
   private lazy val callback = new FooterMenuCallback {
@@ -161,8 +164,8 @@ class SingleParticipantFragment extends FragmentHelper {
       _ => browserController.openUrl(getString(R.string.url_otr_learn_why))
     }
 
-    participantsController.showParticipantsRequest.onUi {
-      case (view, showDeviceTabIfSingle) => viewPager.foreach { pager =>
+    participantsController.showParticipantsRequest.onUi { case (_, showDeviceTabIfSingle) =>
+      viewPager.foreach { pager =>
         if (screenController.shouldShowDevicesTab) {
           pager.setCurrentItem(DevicePage)
           screenController.setShowDevicesTab(null)
@@ -174,7 +177,7 @@ class SingleParticipantFragment extends FragmentHelper {
 
     userNameView
     userHandle
-
+    userShield
   }
 
   override def onDestroyView(): Unit = {

@@ -108,6 +108,8 @@ class GroupParticipantsFragment extends FragmentHelper {
         .replace(R.id.fl__participant__container, new GuestOptionsFragment(), GuestOptionsFragment.Tag)
         .addToBackStack(GuestOptionsFragment.Tag)
         .commit
+
+      showNavigationIcon(true)
     }
 
     adapter.users.map(_.isEmpty).map {
@@ -116,12 +118,17 @@ class GroupParticipantsFragment extends FragmentHelper {
     }.onUi(emptyListIcon.setVisibility(_))
   }
 
+  private def showNavigationIcon(isVisible: Boolean) = getParentFragment match {
+    case f: ParticipantFragment => f.setNavigationIconVisible(isVisible)
+    case _ =>
+  }
+
   private def showUser(userId: UserId): Unit = {
     verbose(s"onShowUser($userId)")
     convScreenController.showUser(userId)
     participantsController.selectParticipant(userId)
 
-    def openUserProfileFragment(fragment: Fragment, tag: String) =
+    def openUserProfileFragment(fragment: Fragment, tag: String) = {
       getFragmentManager.beginTransaction
         .setCustomAnimations(
           R.anim.fragment_animation_second_page_slide_in_from_right,
@@ -131,6 +138,9 @@ class GroupParticipantsFragment extends FragmentHelper {
         .replace(R.id.fl__participant__container, fragment, tag)
         .addToBackStack(tag)
         .commit
+
+      showNavigationIcon(true)
+    }
 
     KeyboardUtils.hideKeyboard(getActivity)
     participantsController.getUser(userId).foreach {
@@ -179,6 +189,8 @@ class GroupParticipantsFragment extends FragmentHelper {
 
     participantsView
     footerMenu.foreach(_.setRightActionText(getString(R.string.glyph__more)))
+
+    showNavigationIcon(false)
   }
 
   override def onResume() = {
@@ -219,16 +231,11 @@ class GroupParticipantsFragment extends FragmentHelper {
     super.onPause()
   }
 
-  def onBackPressed(): Boolean = {
-    //convScreenController.hideParticipants(true, false)
-    false
-  }
+  def onBackPressed(): Boolean = false
 }
 
 object GroupParticipantsFragment {
   val Tag: String = classOf[GroupParticipantsFragment].getName
 
-  def newInstance(): GroupParticipantsFragment =
-    new GroupParticipantsFragment
-
+  def newInstance(): GroupParticipantsFragment = new GroupParticipantsFragment
 }

@@ -161,6 +161,7 @@
     <dimen name="wire__margin_huge">48dp</dimen>
     <dimen name="wire__padding__tiny">4dp</dimen>
     <dimen name="wire__padding__small">8dp</dimen>
+    <dimen name="wire__padding__1">1dp</dimen>
     <dimen name="wire__padding__2">2dp</dimen>
     <dimen name="wire__padding__4">4dp</dimen>
     <dimen name="wire__padding__5">5dp</dimen>

@@ -58,9 +58,8 @@ class ParticipantDetailsTab(val context: Context, callback: FooterMenuCallback) 
   private lazy val userAvailability    = findById[ShowAvailabilityView](R.id.participant_availability)
 
   private val otherUser = for {
-    z         <- zms
     Some(uId) <- participantsController.otherParticipant
-    user      <- z.users.userSignal(uId)
+    user      <- participantsController.userSignal(uId)
   } yield user
 
   private val picture: Signal[ImageSource] =

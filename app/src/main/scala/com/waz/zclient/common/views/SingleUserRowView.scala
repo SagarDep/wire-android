@@ -72,7 +72,7 @@ class SingleUserRowView(context: Context, attrs: AttributeSet, style: Int) exten
 
   def setChecked(checked: Boolean): Unit = checkbox.setChecked(checked)
 
-  def setVerified(verified: Boolean): Unit = verifiedShield.setVisibility(if (verified) View.VISIBLE else View.GONE)
+  private def setVerified(verified: Boolean) = verifiedShield.setVisibility(if (verified) View.VISIBLE else View.GONE)
 
   def showArrow(show: Boolean): Unit = nextIndicator.setVisibility(if (show) View.VISIBLE else View.GONE)
 
