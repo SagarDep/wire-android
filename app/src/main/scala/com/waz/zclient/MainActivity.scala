@@ -387,9 +387,9 @@ class MainActivity extends BaseActivity
 
   def onConnectUserUpdated(user: User, userRequester: IConnectStore.UserRequester): Unit = {}
 
-  def onInviteRequestSent(conversation: IConversation) = {
-    info(s"onInviteRequestSent(${conversation.getId})")
-    conversationController.selectConv(Option(new ConvId(conversation.getId)), ConversationChangeRequester.INVITE)
+  def onInviteRequestSent(conversation: String) = {
+    info(s"onInviteRequestSent($conversation)")
+    conversationController.selectConv(Option(new ConvId(conversation)), ConversationChangeRequester.INVITE)
   }
 
   def onOpenUrl(url: String) = {

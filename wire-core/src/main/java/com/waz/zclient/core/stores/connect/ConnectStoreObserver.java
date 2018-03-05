@@ -24,5 +24,5 @@ public interface ConnectStoreObserver {
 
     void onConnectUserUpdated(User user, IConnectStore.UserRequester userRequester);
 
-    void onInviteRequestSent(IConversation conversation);
+    void onInviteRequestSent(String conversation);
 }

@@ -125,10 +125,10 @@ class ConversationListAdapter(implicit injector: Injector, eventContext: EventCo
             }
           })
           r.setConversationCallback(new ConversationCallback {
-            override def onConversationListRowLongClicked(conversation: IConversation, view: View) = {
+            override def onConversationListRowLongClicked(conversation: String, view: View) = {
               Option(view.getTag.asInstanceOf[ConversationData]).foreach { onConversationLongClick ! _ }
             }
-            override def onConversationListRowSwiped(conversation: IConversation, view: View) = {
+            override def onConversationListRowSwiped(conversation: String, view: View) = {
               Option(view.getTag.asInstanceOf[ConversationData]).foreach { onConversationLongClick ! _ }
             }
           })

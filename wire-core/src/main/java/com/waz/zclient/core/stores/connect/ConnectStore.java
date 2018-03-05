@@ -45,7 +45,7 @@ public abstract class ConnectStore implements IConnectStore {
 
     protected void notifyInviteRequestSent(IConversation conversation) {
         for (ConnectStoreObserver connectStoreObserver : connectStoreObservers) {
-            connectStoreObserver.onInviteRequestSent(conversation);
+            connectStoreObserver.onInviteRequestSent(conversation.getId());
         }
     }
 
